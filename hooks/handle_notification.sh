@@ -63,6 +63,8 @@ play_audio() {
     elif command -v paplay >/dev/null 2>&1; then
       paplay "$file" &
     fi
+  elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
+    powershell -Command "(New-Object System.Media.SoundPlayer '$file').PlaySync()" &
   fi
 }
 
@@ -77,6 +79,8 @@ speak() {
     elif command -v gtts-cli >/dev/null 2>&1; then
       gtts-cli "$text" --output /tmp/gtts.mp3 && play -q /tmp/gtts.mp3 &
     fi
+  elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
+    powershell -Command "Add-Type -AssemblyName System.Speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Speak('$text')" &
   fi
 }
 
