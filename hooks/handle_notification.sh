@@ -50,21 +50,21 @@ case "$THEME" in
     ;;
 esac
 
-# Cross-platform audio player detection (non-blocking)
+# Cross-platform audio player detection (blocking/synchronous)
 play_audio() {
   local file=$1
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    /usr/bin/afplay "$file" &
+    /usr/bin/afplay "$file"
   elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if command -v play >/dev/null 2>&1; then
-      play -q "$file" &
+      play -q "$file"
     elif command -v mpg123 >/dev/null 2>&1; then
-      mpg123 -q "$file" &
+      mpg123 -q "$file"
     elif command -v paplay >/dev/null 2>&1; then
-      paplay "$file" &
+      paplay "$file"
     fi
   elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
-    powershell -Command "(New-Object System.Media.SoundPlayer '$file').PlaySync()" &
+    powershell -Command "(New-Object System.Media.SoundPlayer '$file').PlaySync()"
   fi
 }
 
