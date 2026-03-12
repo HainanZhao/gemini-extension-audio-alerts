@@ -8,7 +8,7 @@
       "description": "Select the audio theme (default, retro, portal, espionage, hero, premium). Leave empty to use default theme.",
       "envVar": "AUDIO_ALERTS_THEME",
       "sensitive": false,
-      "default": "default"
+      "default": "retro"
     }
   ]
 }
