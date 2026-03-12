@@ -41,7 +41,7 @@ case "$THEME" in
   retro)
     THEME_MESSAGES[question]="Permission needed"
     THEME_MESSAGES[error]="Error detected"
-    THEME_MESSAGES[done]="Game over. You win"
+    THEME_MESSAGES[done]="Level complete"
     ;;
   *)
     THEME_MESSAGES[question]="Permission required"
