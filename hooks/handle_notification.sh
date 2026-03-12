@@ -9,8 +9,29 @@ else
   EXTENSION_PATH="${GEMINI_EXTENSION_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 fi
 
-# Read theme from environment variable, default to 'default'
-THEME="${AUDIO_ALERTS_THEME:-default}"
+# Read theme from config file, env variable, or use default
+get_theme() {
+  local config_file="$HOME/.gemini/audio_alerts.conf"
+  local theme="default" # Default theme
+
+  # 1. Read from config file
+  if [ -f "$config_file" ]; then
+    # Use grep and cut for portability (avoids source)
+    local theme_from_config=$(grep -E '^\s*AUDIO_ALERTS_THEME\s*=' "$config_file" | cut -d'=' -f2 | tr -d '[:space:]')
+    if [ -n "$theme_from_config" ]; then
+      theme="$theme_from_config"
+    fi
+  fi
+
+  # 2. Environment variable overrides config file
+  if [ -n "$AUDIO_ALERTS_THEME" ]; then
+    theme="$AUDIO_ALERTS_THEME"
+  fi
+  
+  echo "$theme"
+}
+
+THEME=$(get_theme)
 # Normalize theme name to lowercase
 THEME=$(echo "$THEME" | tr '[:upper:]' '[:lower:]')
 

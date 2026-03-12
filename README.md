@@ -29,6 +29,20 @@ Enable notifications using:
 
 Without notifications enabled, the audio alerts will not trigger for some events.
 
+## Configuration (Optional)
+
+For a permanent theme setting, create a configuration file:
+
+```bash
+# Create the config file
+touch ~/.gemini/audio_alerts.conf
+
+# Add your preferred theme
+echo "AUDIO_ALERTS_THEME=retro" > ~/.gemini/audio_alerts.conf
+```
+
+The extension will read this file automatically. An environment variable (`AUDIO_ALERTS_THEME`) can still be used to override the config file for a single session.
+
 ## Sound Themes
 
 | Theme | Style |
@@ -39,10 +53,7 @@ Without notifications enabled, the audio alerts will not trigger for some events
 | hero | Cinematic |
 | premium | Elegant |
 
-Change theme:
-```bash
-export AUDIO_ALERTS_THEME=portal  # Add to ~/.zshrc
-```
+To change the theme, edit `~/.gemini/audio_alerts.conf` or set an environment variable (see above).
 
 ## How It Works
 
