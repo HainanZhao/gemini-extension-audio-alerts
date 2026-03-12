@@ -15,7 +15,7 @@ fi
 
 ASSETS_DIR="$EXTENSION_PATH/assets/$THEME"
 
-# Cross-platform audio player detection
+# Cross-platform audio player detection (non-blocking)
 play_audio() {
   local file=$1
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -40,18 +40,16 @@ if [[ "$1" == "--notification" ]]; then
   
   # Case: ToolPermission (specifically ask_user)
   if [[ "$NOTIFICATION_TYPE" == "ToolPermission" ]] && echo "$CONTEXT" | grep -q '"type":"ask_user"'; then
-    play_audio "$ASSETS_DIR/ping.mp3"
-    play_audio "$ASSETS_DIR/question.mp3"
+    play_audio "$ASSETS_DIR/question.wav"
   
   # Case: Generic Errors
   elif echo "$CONTEXT" | grep -qi "error"; then
-    play_audio "$ASSETS_DIR/error_ping.mp3"
-    play_audio "$ASSETS_DIR/error.mp3"
+    play_audio "$ASSETS_DIR/error.wav"
   fi
 
 # 2. Handle Agent Completion (AfterAgent Hook)
 elif [[ "$1" == "--finished" ]]; then
-  play_audio "$ASSETS_DIR/done.mp3"
+  play_audio "$ASSETS_DIR/done.wav"
 fi
 
 exit 0

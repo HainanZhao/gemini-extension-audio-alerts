@@ -113,11 +113,9 @@ generate_theme_sounds() {
     local theme_dir="$ASSETS_DIR/$theme"
     mkdir -p "$theme_dir"
     
-    # Generate each sound type
-    generate_sound_python "$theme" "ping" "$theme_dir/ping.mp3"
+    # Generate each sound type (only what's needed by the hook)
     generate_sound_python "$theme" "question" "$theme_dir/question.mp3"
     generate_sound_python "$theme" "error" "$theme_dir/error.mp3"
-    generate_sound_python "$theme" "error_ping" "$theme_dir/error_ping.mp3"
     generate_sound_python "$theme" "done" "$theme_dir/done.mp3"
     
     log_success "Completed theme: $theme"

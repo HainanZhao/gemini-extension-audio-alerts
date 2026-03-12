@@ -12,31 +12,56 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 SAMPLE_RATE = 44100
 DURATION = 0.3  # seconds
 
+def generate_envelope(n_samples, attack=0.01, decay=0.1, sustain=0.7, release=0.3):
+    """Generate ADSR envelope."""
+    attack_samples = int(SAMPLE_RATE * attack)
+    decay_samples = int(SAMPLE_RATE * decay)
+    release_samples = int(SAMPLE_RATE * release)
+    sustain_end = n_samples - release_samples
+    
+    envelope = []
+    for i in range(n_samples):
+        if i < attack_samples:
+            envelope.append(i / attack_samples)
+        elif i < attack_samples + decay_samples:
+            progress = (i - attack_samples) / decay_samples
+            envelope.append(1.0 - (1.0 - sustain) * progress)
+        elif i < sustain_end:
+            envelope.append(sustain)
+        else:
+            progress = (i - sustain_end) / release_samples
+            envelope.append(sustain * (1.0 - progress))
+    return envelope
+
 def generate_tone(frequency, duration, sample_rate=SAMPLE_RATE, volume=0.5):
-    """Generate a simple sine wave tone."""
+    """Generate a sine wave with proper envelope."""
     n_samples = int(sample_rate * duration)
     samples = []
+    envelope = generate_envelope(n_samples, attack=0.005, decay=0.05, sustain=0.6, release=0.2)
+    
     for i in range(n_samples):
         t = i / sample_rate
         value = volume * math.sin(2 * math.pi * frequency * t)
-        # Apply fade out
-        fade = 1.0 - (i / n_samples)
-        value *= fade
+        value *= envelope[i]
         samples.append(value)
     return samples
 
 def generate_chime(frequencies, duration, sample_rate=SAMPLE_RATE):
-    """Generate a chime with multiple frequencies."""
+    """Generate a rich chime with multiple harmonics."""
     n_samples = int(sample_rate * duration)
     samples = [0.0] * n_samples
+    
+    # Envelope with quick attack and long release
+    envelope = generate_envelope(n_samples, attack=0.005, decay=0.1, sustain=0.5, release=0.4)
     
     for freq in frequencies:
         for i in range(n_samples):
             t = i / sample_rate
-            value = 0.3 * math.sin(2 * math.pi * freq * t)
-            # Apply exponential decay
-            decay = math.exp(-3 * t / duration)
-            samples[i] += value * decay
+            # Add slight detuning for richer sound
+            value = 0.25 * math.sin(2 * math.pi * freq * t)
+            value += 0.1 * math.sin(2 * math.pi * freq * 2 * t)  # Octave
+            value *= envelope[i]
+            samples[i] += value
     
     # Normalize
     max_val = max(abs(s) for s in samples)
@@ -46,18 +71,18 @@ def generate_chime(frequencies, duration, sample_rate=SAMPLE_RATE):
     return samples
 
 def generate_retro_sound(base_freq, duration, sample_rate=SAMPLE_RATE):
-    """Generate a retro 8-bit style sound with square wave."""
+    """Generate a retro 8-bit style sound with better envelope."""
     n_samples = int(sample_rate * duration)
     samples = []
     period = sample_rate / base_freq
     
+    envelope = generate_envelope(n_samples, attack=0.002, decay=0.05, sustain=0.8, release=0.1)
+    
     for i in range(n_samples):
-        t = i / sample_rate
         # Square wave
-        value = 0.5 if (i % int(period)) < period / 2 else -0.5
-        # Apply envelope
-        envelope = 1.0 - (i / n_samples)
-        samples.append(value * envelope)
+        value = 0.4 if (i % int(period)) < period / 2 else -0.4
+        value *= envelope[i]
+        samples.append(value)
     
     return samples
 
@@ -82,6 +107,11 @@ def generate_theme_sounds():
     """Generate sounds for all themes."""
     
     themes = {
+        'default': {
+            'question': {'type': 'chime', 'freqs': [880, 1100], 'duration': 0.25},  # Pleasant two-tone
+            'error': {'type': 'tone', 'freq': 330, 'duration': 0.35},  # Soft low alert
+            'done': {'type': 'chime', 'freqs': [523, 659, 784], 'duration': 0.5},  # Success chime (C major)
+        },
         'espionage': {
             'question': {'type': 'tone', 'freq': 800, 'duration': 0.15},  # High-tech click
             'error': {'type': 'tone', 'freq': 200, 'duration': 0.4},  # Low warning
@@ -126,6 +156,8 @@ def generate_theme_sounds():
                 samples = generate_chime(config['freqs'], config['duration'])
             elif config['type'] == 'retro':
                 samples = generate_retro_sound(config['freq'], config['duration'])
+            else:
+                samples = generate_tone(440, 0.2)
             
             # Save as WAV first, then we can convert if needed
             wav_path = filepath.replace('.mp3', '.wav')
