@@ -31,7 +31,7 @@ Without notifications enabled, the audio alerts will not trigger for some events
 
 ## Configuration (Optional)
 
-For a permanent theme setting, create a configuration file:
+For permanent theme and logging settings, create a configuration file:
 
 ```bash
 # Create the config file
@@ -39,9 +39,15 @@ touch ~/.gemini/audio_alerts.conf
 
 # Add your preferred theme
 echo "AUDIO_ALERTS_THEME=retro" > ~/.gemini/audio_alerts.conf
+
+# Enable debug logging (optional)
+echo "AUDIO_ALERTS_DEBUG=1" >> ~/.gemini/audio_alerts.conf
+
+# Disable Text-to-Speech (TTS) completely
+echo "AUDIO_ALERTS_DISABLE_TTS=true" >> ~/.gemini/audio_alerts.conf
 ```
 
-The extension will read this file automatically. An environment variable (`AUDIO_ALERTS_THEME`) can still be used to override the config file for a single session.
+The extension will read this file automatically. Environment variables (`AUDIO_ALERTS_THEME`, `AUDIO_ALERTS_DEBUG`, `AUDIO_ALERTS_DISABLE_TTS`) can still be used to override the config file for a single session.
 
 ## Sound Themes
 

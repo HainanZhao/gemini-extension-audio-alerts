@@ -9,29 +9,31 @@ else
   EXTENSION_PATH="${GEMINI_EXTENSION_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 fi
 
-# Read theme from config file, env variable, or use default
-get_theme() {
+# Generic function to read a config value from a file or environment variable
+get_config_value() {
+  local key=$1
+  local default_value=$2
   local config_file="$HOME/.gemini/audio_alerts.conf"
-  local theme="default" # Default theme
+  local value="$default_value"
 
   # 1. Read from config file
   if [ -f "$config_file" ]; then
-    # Use grep and cut for portability (avoids source)
-    local theme_from_config=$(grep -E '^\s*AUDIO_ALERTS_THEME\s*=' "$config_file" | cut -d'=' -f2 | tr -d '[:space:]')
-    if [ -n "$theme_from_config" ]; then
-      theme="$theme_from_config"
+    # Use grep and cut for portability
+    local value_from_config=$(grep -E "^\s*$key\s*=" "$config_file" | cut -d'=' -f2 | tr -d '[:space:]')
+    if [ -n "$value_from_config" ]; then
+      value="$value_from_config"
     fi
   fi
 
-  # 2. Environment variable overrides config file
-  if [ -n "$AUDIO_ALERTS_THEME" ]; then
-    theme="$AUDIO_ALERTS_THEME"
+  # 2. Environment variable overrides config file (using indirect expansion)
+  if [ -n "${!key}" ]; then
+    value="${!key}"
   fi
   
-  echo "$theme"
+  echo "$value"
 }
 
-THEME=$(get_theme)
+THEME=$(get_config_value "AUDIO_ALERTS_THEME" "default")
 # Normalize theme name to lowercase
 THEME=$(echo "$THEME" | tr '[:upper:]' '[:lower:]')
 
@@ -94,8 +96,13 @@ play_audio() {
   fi
 }
 
+AUDIO_ALERTS_DISABLE_TTS_MODE=$(get_config_value "AUDIO_ALERTS_DISABLE_TTS" "false")
+
 # Cross-platform TTS (blocking/synchronous)
 speak() {
+  if [[ "$AUDIO_ALERTS_DISABLE_TTS_MODE" == "true" ]]; then
+    return
+  fi
   local text="$1"
   if [[ "$OSTYPE" == "darwin"* ]]; then
     say "$text"
@@ -115,7 +122,9 @@ play_alert() {
   local audio_file=$1
   local text=$2
   play_audio "$audio_file"
-  speak "$text"
+  if [[ "$AUDIO_ALERTS_DISABLE_TTS_MODE" != "true" ]]; then
+    speak "$text"
+  fi
 }
 
 # Get timestamp file path (unique per session)
@@ -126,10 +135,11 @@ get_timestamp_file() {
   echo "/tmp/audio_alerts_${session_id}.timestamp"
 }
 
-# Debug logging (only when AUDIO_ALERTS_DEBUG=1)
+# Debug logging
 DEBUG_LOG="/tmp/audio_alerts_debug.log"
+AUDIO_ALERTS_DEBUG_MODE=$(get_config_value "AUDIO_ALERTS_DEBUG" "0")
 log_debug() {
-  [[ "${AUDIO_ALERTS_DEBUG:-0}" == "1" ]] && echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
+  [[ "${AUDIO_ALERTS_DEBUG_MODE:-0}" == "1" ]] && echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
 }
 
 # Read hook data from stdin
