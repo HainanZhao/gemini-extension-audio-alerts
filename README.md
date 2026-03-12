@@ -11,7 +11,7 @@ This extension uses the `Notification` hook system to trigger direct audio alert
 ## Features
 - **Surgical Precision**: Only alerts on `ask_user` tool permissions.
 - **Immediate Response**: Triggers simultaneously with the prompt appearance.
-- **6 Themed Sound Packs**: Choose from default, retro, portal, espionage, hero, or premium themes.
+- **6 Themed Sound Packs**: Choose from retro (default), portal, espionage, hero, or premium themes.
 - **Custom Sound Generation**: Generate your own custom sounds using the included Python script.
 - **Cross-Platform**: Works on macOS (afplay) and Linux (play, mpg123, or paplay).
 
@@ -19,8 +19,7 @@ This extension uses the `Notification` hook system to trigger direct audio alert
 
 | Theme | Description | Style |
 |-------|-------------|-------|
-| **Default** | Clean, modern notification sounds | Professional |
-| **Retro** | 8-bit video game style sounds | Nostalgic |
+| **Retro** (default) | 8-bit video game style sounds | Nostalgic |
 | **Portal** | Sci-fi portal and teleportation effects | Futuristic |
 | **Espionage** | Spy thriller and secret agent sounds | Mysterious |
 | **Hero** | Epic superhero and cinematic sounds | Dramatic |
@@ -74,7 +73,7 @@ You should hear audio alerts when Gemini asks questions or completes tasks.
 Set the `AUDIO_ALERTS_THEME` environment variable:
 
 ```bash
-export AUDIO_ALERTS_THEME=retro  # Options: default, retro, portal, espionage, hero, premium
+export AUDIO_ALERTS_THEME=portal  # Options: retro (default), portal, espionage, hero, premium
 ```
 
 Add to your shell config (`~/.zshrc` or `~/.bashrc`) to make it permanent.
