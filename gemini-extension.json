@@ -10,31 +10,5 @@
       "sensitive": false,
       "default": "default"
     }
-  ],
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "name": "notify-audio",
-            "type": "command",
-            "command": "./hooks/handle_notification.sh --notification"
-          }
-        ]
-      }
-    ],
-    "AfterAgent": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "name": "notify-done",
-            "type": "command",
-            "command": "./hooks/handle_notification.sh --finished"
-          }
-        ]
-      }
-    ]
-  }
+  ]
 }

@@ -28,15 +28,44 @@ This extension uses the `Notification` hook system to trigger direct audio alert
 
 ## Installation
 
-Install directly via the Gemini CLI:
+### Quick Install
 
 ```bash
 gemini extensions install https://github.com/your-username/gemini-audio-alerts
 ```
 
-Or manually:
-1. Copy this folder into your `.gemini/extensions` directory.
-2. Restart your Gemini CLI.
+Then run the installation script to verify setup:
+
+```bash
+cd ~/.gemini/extensions/gemini-audio-alerts
+./scripts/install-hooks.sh
+```
+
+**That's it!** The hooks are defined in `hooks/hooks.json` and are **automatically loaded** by Gemini CLI when the extension is enabled. No manual `settings.json` configuration required!
+
+### How It Works
+
+1. **Extension Install**: `gemini extensions install` copies the extension to `~/.gemini/extensions/`
+2. **Automatic Hook Loading**: Gemini CLI reads `hooks/hooks.json` from the extension directory
+3. **Hooks Activated**: The hooks are automatically active when the extension is enabled
+
+### Manual Install (Alternative)
+
+1. Clone or copy this folder to `~/.gemini/extensions/gemini-audio-alerts`
+2. Run `./scripts/install-hooks.sh` to make scripts executable
+3. Restart Gemini CLI
+
+### Verify Installation
+
+```bash
+# List extensions and verify it's enabled
+gemini extensions list
+
+# Test with a simple question
+gemini "What is 2+2?"
+```
+
+You should hear audio alerts when Gemini asks questions or completes tasks.
 
 ## Configuration
 

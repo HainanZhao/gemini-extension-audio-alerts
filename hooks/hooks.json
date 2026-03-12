@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "notify-audio",
+            "type": "command",
+            "command": "${extensionPath}/hooks/handle_notification.sh --notification"
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "notify-done",
+            "type": "command",
+            "command": "${extensionPath}/hooks/handle_notification.sh --finished"
+          }
+        ]
+      }
+    ]
+  }
+}
