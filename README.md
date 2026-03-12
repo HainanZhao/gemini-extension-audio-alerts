@@ -31,7 +31,7 @@ This extension uses the `Notification` hook system to trigger direct audio alert
 ### Quick Install
 
 ```bash
-gemini extensions install https://github.com/your-username/gemini-audio-alerts
+gemini extensions install https://github.com/HainanZhao/gemini-extension-audio-alerts
 ```
 
 Then run the installation script to verify setup:
