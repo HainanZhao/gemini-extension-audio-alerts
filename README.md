@@ -14,7 +14,6 @@ Direct audio alerts triggered via Gemini's hook system when:
 ## Installation
 
 ```bash
-# Install extension
 gemini extensions install https://github.com/HainanZhao/gemini-extension-audio-alerts
 ```
 
