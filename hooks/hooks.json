@@ -12,6 +12,18 @@
         ]
       }
     ],
+    "BeforeAgent": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "record-start",
+            "type": "command",
+            "command": "${extensionPath}/hooks/handle_notification.sh --before"
+          }
+        ]
+      }
+    ],
     "AfterAgent": [
       {
         "matcher": "*",

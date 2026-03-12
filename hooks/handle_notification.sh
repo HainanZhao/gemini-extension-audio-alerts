@@ -84,10 +84,23 @@ speak() {
   fi
 }
 
+# Get timestamp file path (unique per terminal session)
+get_timestamp_file() {
+  local terminal_id="${TERM_SESSION_ID:-$$}"
+  echo "/tmp/audio_alerts_${terminal_id}.timestamp"
+}
+
 # Read hook data from stdin
 CONTEXT=$(cat)
 
-# 1. Handle Notifications
+# 1. Handle BeforeAgent - Record start timestamp
+if [[ "$1" == "--before" ]]; then
+  TIMESTAMP_FILE=$(get_timestamp_file)
+  date +%s > "$TIMESTAMP_FILE"
+  exit 0
+fi
+
+# 2. Handle Notifications
 if [[ "$1" == "--notification" ]]; then
   NOTIFICATION_TYPE=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | cut -d'"' -f4)
   
@@ -104,11 +117,30 @@ if [[ "$1" == "--notification" ]]; then
     speak "${THEME_MESSAGES[error]}"
   fi
 
-# 2. Handle Agent Completion (AfterAgent Hook)
+# 3. Handle Agent Completion (AfterAgent Hook)
 elif [[ "$1" == "--finished" ]]; then
-  play_audio "$ASSETS_DIR/done.wav"
-  sleep 0.3
-  speak "${THEME_MESSAGES[done]}"
+  TIMESTAMP_FILE=$(get_timestamp_file)
+  SKIP_SOUND=false
+
+  if [ -f "$TIMESTAMP_FILE" ]; then
+    START_TIME=$(cat "$TIMESTAMP_FILE")
+    END_TIME=$(date +%s)
+    ELAPSED=$((END_TIME - START_TIME))
+
+    # Skip sound if less than 30 seconds elapsed
+    if [ "$ELAPSED" -lt 30 ]; then
+      SKIP_SOUND=true
+    fi
+
+    # Clean up timestamp file
+    rm -f "$TIMESTAMP_FILE"
+  fi
+
+  if [ "$SKIP_SOUND" = false ]; then
+    play_audio "$ASSETS_DIR/done.wav"
+    sleep 0.3
+    speak "${THEME_MESSAGES[done]}"
+  fi
 fi
 
 exit 0
