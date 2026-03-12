@@ -68,20 +68,28 @@ play_audio() {
   fi
 }
 
-# Cross-platform TTS (non-blocking)
+# Cross-platform TTS (blocking/synchronous)
 speak() {
   local text="$1"
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    say "$text" &
+    say "$text"
   elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if command -v espeak >/dev/null 2>&1; then
-      espeak "$text" &
+      espeak "$text"
     elif command -v gtts-cli >/dev/null 2>&1; then
-      gtts-cli "$text" --output /tmp/gtts.mp3 && play -q /tmp/gtts.mp3 &
+      gtts-cli "$text" --output /tmp/gtts.mp3 && play -q /tmp/gtts.mp3
     fi
   elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
-    powershell -Command "Add-Type -AssemblyName System.Speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Speak('$text')" &
+    powershell -Command "Add-Type -AssemblyName System.Speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Speak('$text')"
   fi
+}
+
+# Play audio then TTS in sequence, running asynchronously
+play_alert() {
+  local audio_file=$1
+  local text=$2
+  play_audio "$audio_file"
+  speak "$text"
 }
 
 # Get timestamp file path (unique per terminal session)
@@ -103,18 +111,14 @@ fi
 # 2. Handle Notifications
 if [[ "$1" == "--notification" ]]; then
   NOTIFICATION_TYPE=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | cut -d'"' -f4)
-  
+
   # Case: ToolPermission (specifically ask_user)
   if [[ "$NOTIFICATION_TYPE" == "ToolPermission" ]] && echo "$CONTEXT" | grep -q '"type":"ask_user"'; then
-    play_audio "$ASSETS_DIR/question.wav"
-    sleep 0.3
-    speak "${THEME_MESSAGES[question]}"
-  
+    play_alert "$ASSETS_DIR/question.wav" "${THEME_MESSAGES[question]}" &
+
   # Case: Generic Errors
   elif echo "$CONTEXT" | grep -qi "error"; then
-    play_audio "$ASSETS_DIR/error.wav"
-    sleep 0.3
-    speak "${THEME_MESSAGES[error]}"
+    play_alert "$ASSETS_DIR/error.wav" "${THEME_MESSAGES[error]}" &
   fi
 
 # 3. Handle Agent Completion (AfterAgent Hook)
@@ -137,9 +141,7 @@ elif [[ "$1" == "--finished" ]]; then
   fi
 
   if [ "$SKIP_SOUND" = false ]; then
-    play_audio "$ASSETS_DIR/done.wav"
-    sleep 0.3
-    speak "${THEME_MESSAGES[done]}"
+    play_alert "$ASSETS_DIR/done.wav" "${THEME_MESSAGES[done]}" &
   fi
 fi
 
