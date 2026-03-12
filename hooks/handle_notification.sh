@@ -149,10 +149,10 @@ elif [[ "$1" == "--finished" ]]; then
     ELAPSED=$((END_TIME - START_TIME))
     log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=$DONE_MSG"
 
-    # If less than 30 seconds, play sound only (no TTS)
-    if [ "$ELAPSED" -lt 30 ]; then
+    # If less than 60 seconds, play sound only (no TTS)
+    if [ "$ELAPSED" -lt 60 ]; then
       SKIP_TTS=true
-      log_debug "Short session (< 30s): will play sound only, skip TTS"
+      log_debug "Short session (< 60s): will play sound only, skip TTS"
     fi
 
     # Clean up timestamp file

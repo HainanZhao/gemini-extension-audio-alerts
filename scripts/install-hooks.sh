@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # Installation script for Gemini Audio Alerts Extension
-# This script verifies the hooks.json configuration and makes scripts executable
-# Note: Hooks are now defined in hooks/hooks.json and loaded automatically by Gemini CLI
+# Installs hooks to ~/.gemini/hooks for use with Gemini CLI
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXTENSION_PATH="$(cd "$SCRIPT_DIR/.." && pwd)"
+TARGET_DIR="$HOME/.gemini/hooks"
 
 # Parse arguments
 QUIET=false
@@ -27,44 +27,93 @@ log "🔧 Gemini Audio Alerts Extension Installer"
 log "=========================================="
 log ""
 log "Extension path: $EXTENSION_PATH"
+log "Installing to: $TARGET_DIR"
 log ""
 
-# Verify hooks.json exists
-HOOKS_JSON="$EXTENSION_PATH/hooks/hooks.json"
-if [ ! -f "$HOOKS_JSON" ]; then
-    echo "❌ Error: hooks/hooks.json not found!"
-    echo ""
-    echo "This file is required for the extension to work."
-    echo "Please ensure the extension was installed correctly."
-    exit 1
-fi
+# Create target directory
+mkdir -p "$TARGET_DIR"
 
-log "✓ Found hooks/hooks.json"
+# Copy hooks.json
+cat > "$TARGET_DIR/hooks.json" << 'EOF'
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "ToolPermission",
+        "hooks": [
+          {
+            "name": "notify-permission",
+            "type": "command",
+            "command": "$HOME/.gemini/hooks/handle_notification.sh --notification"
+          }
+        ]
+      },
+      {
+        "matcher": "ToolExecutionError",
+        "hooks": [
+          {
+            "name": "notify-error",
+            "type": "command",
+            "command": "$HOME/.gemini/hooks/handle_notification.sh --notification --error"
+          }
+        ]
+      }
+    ],
+    "BeforeTool": [
+      {
+        "matcher": "ask_user",
+        "hooks": [
+          {
+            "name": "ask-user-alert",
+            "type": "command",
+            "command": "$HOME/.gemini/hooks/handle_notification.sh --before-tool"
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "record-start",
+            "type": "command",
+            "command": "$HOME/.gemini/hooks/handle_notification.sh --before"
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "notify-done",
+            "type": "command",
+            "command": "$HOME/.gemini/hooks/handle_notification.sh --finished"
+          }
+        ]
+      }
+    ]
+  }
+}
+EOF
+log "✓ Installed hooks.json"
 
-# Verify hook script exists
-HOOK_SCRIPT="$EXTENSION_PATH/hooks/handle_notification.sh"
-if [ ! -f "$HOOK_SCRIPT" ]; then
-    echo "❌ Error: hooks/handle_notification.sh not found!"
-    exit 1
-fi
+# Copy hook script
+cp "$EXTENSION_PATH/hooks/handle_notification.sh" "$TARGET_DIR/"
+chmod +x "$TARGET_DIR/handle_notification.sh"
+log "✓ Installed handle_notification.sh"
 
-# Make the hook script executable
-chmod +x "$HOOK_SCRIPT"
-log "✓ Hook script made executable"
-
-# Verify assets directory
-ASSETS_DIR="$EXTENSION_PATH/assets"
-if [ ! -d "$ASSETS_DIR" ]; then
-    echo "⚠️  Warning: assets directory not found"
-fi
+# Copy assets
+rm -rf "$HOME/.gemini/assets"
+cp -r "$EXTENSION_PATH/assets" "$HOME/.gemini/"
+log "✓ Installed assets"
 
 log ""
 log "✅ Installation complete!"
 log ""
-log "The hooks are defined in hooks/hooks.json and will be loaded automatically"
-log "by Gemini CLI when the extension is enabled."
-log ""
-log "To verify, run: gemini extensions list"
+log "Audio alerts are now installed in ~/.gemini/hooks/"
 log ""
 log "Optional: Set a theme with:"
 log "  export AUDIO_ALERTS_THEME=retro"

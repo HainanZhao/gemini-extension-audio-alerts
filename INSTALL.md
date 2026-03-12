@@ -29,12 +29,12 @@ You should hear audio alerts when Gemini asks questions or completes tasks.
 
 2. **Verify hooks.json exists**:
    ```bash
-   ls ~/.gemini/extensions/gemini-audio-alerts/hooks/hooks.json
+   ls ~/.gemini/extensions/audio-alerts/hooks/hooks.json
    ```
 
 3. **Make sure script is executable**:
    ```bash
-   chmod +x ~/.gemini/extensions/gemini-audio-alerts/hooks/handle_notification.sh
+   chmod +x ~/.gemini/extensions/audio-alerts/hooks/handle_notification.sh
    ```
 
 4. **Check volume** - Ensure your system volume is up
