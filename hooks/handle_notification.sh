@@ -118,23 +118,37 @@ fi
 
 # 2. Handle Notifications
 if [[ "$1" == "--notification" ]]; then
-  # Use jq if available for better reliability
+  local notification_type=""
+  local is_ask_user=false
+
+  # Use jq for reliable parsing
   if command -v jq >/dev/null 2>&1; then
-    NOTIFICATION_TYPE=$(echo "$CONTEXT" | jq -r '.notification_type // empty')
+    notification_type=$(echo "$CONTEXT" | jq -r '.notification_type // empty')
+    if [[ "$notification_type" == "ToolPermission" ]]; then
+      tool_code=$(echo "$CONTEXT" | jq -r '.tool_code // empty')
+      if [[ "$tool_code" == *'ask_user'* ]]; then
+        is_ask_user=true
+      fi
+    fi
   else
-    NOTIFICATION_TYPE=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | head -1 | cut -d'"' -f4)
+    # Fallback to grep
+    notification_type=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | head -1 | cut -d'"' -f4)
+    if [[ "$notification_type" == "ToolPermission" ]]; then
+      # This is less reliable as 'ask_user' could appear elsewhere
+      if echo "$CONTEXT" | grep -q 'ask_user'; then
+        is_ask_user=true
+      fi
+    fi
   fi
 
-  log_debug "Notification: type=$NOTIFICATION_TYPE, theme=$THEME, question_msg=$QUESTION_MSG"
+  log_debug "Notification: type=$notification_type, is_ask_user=$is_ask_user, theme=$THEME"
 
   # Case: ToolPermission (specifically ask_user)
-  # We check for ask_user in the whole context as it might be in different fields
-  if [[ "$NOTIFICATION_TYPE" == "ToolPermission" ]] && echo "$CONTEXT" | grep -q '"type":"ask_user"'; then
+  if [[ "$is_ask_user" == true ]]; then
     log_debug "Playing question alert"
     play_alert "$ASSETS_DIR/question.wav" "$QUESTION_MSG" &
-
-  # Case: Generic Errors
-  elif echo "$CONTEXT" | grep -qi "error"; then
+  # Case: ToolExecutionError
+  elif [[ "$notification_type" == "ToolExecutionError" ]]; then
     log_debug "Playing error alert"
     play_alert "$ASSETS_DIR/error.wav" "$ERROR_MSG" &
   fi
