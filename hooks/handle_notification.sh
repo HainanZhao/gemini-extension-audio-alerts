@@ -98,6 +98,12 @@ get_timestamp_file() {
   echo "/tmp/audio_alerts_${terminal_id}.timestamp"
 }
 
+# Debug logging
+DEBUG_LOG="/tmp/audio_alerts_debug.log"
+log_debug() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
+}
+
 # Read hook data from stdin
 CONTEXT=$(cat)
 
@@ -105,19 +111,23 @@ CONTEXT=$(cat)
 if [[ "$1" == "--before" ]]; then
   TIMESTAMP_FILE=$(get_timestamp_file)
   date +%s > "$TIMESTAMP_FILE"
+  log_debug "BeforeAgent: timestamp recorded at $TIMESTAMP_FILE"
   exit 0
 fi
 
 # 2. Handle Notifications
 if [[ "$1" == "--notification" ]]; then
   NOTIFICATION_TYPE=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | cut -d'"' -f4)
+  log_debug "Notification: type=$NOTIFICATION_TYPE, theme=$THEME, question_msg=${THEME_MESSAGES[question]}"
 
   # Case: ToolPermission (specifically ask_user)
   if [[ "$NOTIFICATION_TYPE" == "ToolPermission" ]] && echo "$CONTEXT" | grep -q '"type":"ask_user"'; then
+    log_debug "Playing question alert"
     play_alert "$ASSETS_DIR/question.wav" "${THEME_MESSAGES[question]}" &
 
   # Case: Generic Errors
   elif echo "$CONTEXT" | grep -qi "error"; then
+    log_debug "Playing error alert"
     play_alert "$ASSETS_DIR/error.wav" "${THEME_MESSAGES[error]}" &
   fi
 
@@ -130,10 +140,12 @@ elif [[ "$1" == "--finished" ]]; then
     START_TIME=$(cat "$TIMESTAMP_FILE")
     END_TIME=$(date +%s)
     ELAPSED=$((END_TIME - START_TIME))
+    log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=${THEME_MESSAGES[done]}"
 
     # Skip sound if less than 30 seconds elapsed
     if [ "$ELAPSED" -lt 30 ]; then
       SKIP_SOUND=true
+      log_debug "Skipping sound (elapsed < 30s)"
     fi
 
     # Clean up timestamp file
@@ -141,6 +153,7 @@ elif [[ "$1" == "--finished" ]]; then
   fi
 
   if [ "$SKIP_SOUND" = false ]; then
+    log_debug "Playing done alert"
     play_alert "$ASSETS_DIR/done.wav" "${THEME_MESSAGES[done]}" &
   fi
 fi
