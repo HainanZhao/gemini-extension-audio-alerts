@@ -1,0 +1,9 @@
+{
+  "name": "gemini-extension-audio-alerts",
+  "version": "1.0.0",
+  "description": "Custom audio alerts for Gemini CLI notifications (macOS)",
+  "keywords": ["gemini-cli", "extension", "hooks", "alerts"],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

@@ -1,0 +1,40 @@
+{
+  "name": "gemini-audio-alerts",
+  "version": "1.2.0",
+  "description": "Custom audio alerts for Gemini CLI (macOS/Linux), handling Tool Permissions, Errors, and Task Completion with themed sound packs (default, retro, portal, espionage, hero).",
+  "settings": [
+    {
+      "name": "Display Theme",
+      "description": "Select the audio theme (default, retro, portal, espionage, hero, premium). Leave empty to use default theme.",
+      "envVar": "AUDIO_ALERTS_THEME",
+      "sensitive": false,
+      "default": "default"
+    }
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "notify-audio",
+            "type": "command",
+            "command": "./hooks/handle_notification.sh --notification"
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "notify-done",
+            "type": "command",
+            "command": "./hooks/handle_notification.sh --finished"
+          }
+        ]
+      }
+    ]
+  }
+}
