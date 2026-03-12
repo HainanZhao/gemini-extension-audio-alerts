@@ -21,12 +21,6 @@ fi
 
 ASSETS_DIR="$EXTENSION_PATH/assets/$THEME"
 
-# Check if audio alerts are enabled
-ENABLED="${AUDIO_ALERTS_ENABLED:-true}"
-if [[ "$ENABLED" != "true" && "$ENABLED" != "1" && "$ENABLED" != "yes" ]]; then
-  exit 0
-fi
-
 # Define messages for each theme (compatible with bash 3.2 - avoid associative arrays)
 case "$THEME" in
   default)

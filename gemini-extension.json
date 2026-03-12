@@ -4,15 +4,8 @@
   "description": "Custom audio alerts for Gemini CLI (macOS/Linux), handling Tool Permissions, Errors, and Task Completion with themed sound packs (retro, portal, default, hero, premium).",
   "settings": [
     {
-      "name": "Enable Audio Alerts",
-      "description": "Enable or disable audio alerts. When disabled, no sounds or TTS will play.",
-      "envVar": "AUDIO_ALERTS_ENABLED",
-      "sensitive": false,
-      "default": "true"
-    },
-    {
       "name": "Display Theme",
-      "description": "Select the audio theme (retro, portal, default, hero, premium).",
+      "description": "Select the audio theme (retro, portal, default, hero, premium). Leave empty to use default (default).",
       "envVar": "AUDIO_ALERTS_THEME",
       "sensitive": false,
       "default": "default"
