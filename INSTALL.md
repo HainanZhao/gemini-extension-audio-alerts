@@ -39,14 +39,28 @@ You should hear audio alerts when Gemini asks questions or completes tasks.
 
 4. **Check volume** - Ensure your system volume is up
 
-### Theme not changing
+### Theme Not Changing
 
-Set the environment variable:
+To change the theme permanently, use the `gemini settings` command or edit the extension's configuration file.
+
+**Option 1: Use Gemini Settings (Recommended)**
+
 ```bash
-export AUDIO_ALERTS_THEME=retro  # Options: default, retro, portal, default, hero, premium
+gemini settings
 ```
+Navigate to the "Audio Alerts" extension and select your desired theme from the dropdown menu.
 
-Add to your `~/.zshrc` or `~/.bashrc` to make it permanent.
+**Option 2: Edit the Configuration File**
+
+1.  Open the extension's environment file in your editor:
+    ```bash
+    open ~/.gemini/extensions/audio-alerts/.env
+    ```
+
+2.  Change the `AUDIO_ALERTS_THEME` value:
+    ```dotenv
+    AUDIO_ALERTS_THEME=retro
+    ```
 
 ## Manual Configuration (Advanced)
 

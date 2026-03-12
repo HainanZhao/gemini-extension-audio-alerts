@@ -5,10 +5,33 @@
   "settings": [
     {
       "name": "Audio Alert Theme",
-      "description": "Select the audio theme (retro, portal, default, hero, premium).",
+      "description": "Select the audio theme.",
       "envVar": "AUDIO_ALERTS_THEME",
-      "sensitive": false,
-      "default": "default"
+      "type": "choice",
+      "default": "default",
+      "options": [
+        {
+          "value": "default",
+          "label": "Default (Agent Thriller)"
+        },
+        {
+          "value": "retro",
+          "label": "Retro (8-bit)"
+        },
+        {
+          "value": "portal",
+          "label": "Portal (Sci-fi)"
+        },
+        {
+          "value": "hero",
+          "label": "Hero (Cinematic)"
+        },
+        {
+          "value": "premium",
+          "label": "Premium (Elegant)"
+        }
+      ],
+      "sensitive": false
     }
   ]
 }

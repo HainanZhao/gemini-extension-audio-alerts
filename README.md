@@ -30,23 +30,39 @@ Without notifications enabled, the audio alerts will not trigger for some events
 
 ## Configuration (Optional)
 
-For permanent theme and logging settings, create a configuration file:
+To configure the extension, you can use the `gemini settings` command or manually edit the extension's environment file.
 
+### Using Gemini Settings
+
+Run the following command to open the settings UI:
 ```bash
-# Create the config file
-touch ~/.gemini/audio_alerts.conf
-
-# Add your preferred theme
-echo "AUDIO_ALERTS_THEME=retro" > ~/.gemini/audio_alerts.conf
-
-# Enable debug logging (optional)
-echo "AUDIO_ALERTS_DEBUG=1" >> ~/.gemini/audio_alerts.conf
-
-# Disable Text-to-Speech (TTS) completely
-echo "AUDIO_ALERTS_DISABLE_TTS=true" >> ~/.gemini/audio_alerts.conf
+gemini settings
 ```
+Then, find the "Audio Alerts" extension and change the "Audio Alert Theme" setting.
 
-The extension will read this file automatically. Environment variables (`AUDIO_ALERTS_THEME`, `AUDIO_ALERTS_DEBUG`, `AUDIO_ALERTS_DISABLE_TTS`) can still be used to override the config file for a single session.
+### Manual Configuration
+
+You can also edit the `.env` file directly.
+
+1.  **Locate the extension directory**: `~/.gemini/extensions/audio-alerts`
+2.  **Edit the environment file**:
+    ```bash
+    # Open the .env file in your editor
+    open ~/.gemini/extensions/audio-alerts/.env
+    ```
+3.  **Set the variables**:
+    ```dotenv
+    # Set your preferred theme (default, retro, portal, hero, premium)
+    AUDIO_ALERTS_THEME=retro
+
+    # Enable debug logging (optional, 1=enabled, 0=disabled)
+    AUDIO_ALERTS_DEBUG=0
+
+    # Disable Text-to-Speech (TTS) completely (true or false)
+    AUDIO_ALERTS_DISABLE_TTS=false
+    ```
+
+Changes to the `.env` file are loaded automatically by Gemini CLI.
 
 ## Sound Themes
 
@@ -58,7 +74,7 @@ The extension will read this file automatically. Environment variables (`AUDIO_A
 | hero | Cinematic |
 | premium | Elegant |
 
-To change the theme, edit `~/.gemini/audio_alerts.conf` or set an environment variable (see above).
+To change the theme, use the `gemini settings` command or edit the `~/.gemini/extensions/audio-alerts/.env` file.
 
 ## How It Works
 

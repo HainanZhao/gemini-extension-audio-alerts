@@ -1,39 +1,17 @@
 #!/usr/bin/env bash
 
-# The Gemini CLI sets these environment variables when executing hooks
-# When installed in ~/.gemini/hooks, the extension path is ~/.gemini
+# The Gemini CLI sets GEMINI_EXTENSION_PATH to the root of the extension directory.
+# We can use this to build a reliable path to our assets.
+# The fallback is for local development when the script is run directly.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ "$SCRIPT_DIR" == "$HOME/.gemini/hooks" ]]; then
-  EXTENSION_PATH="$HOME/.gemini"
-else
-  EXTENSION_PATH="${GEMINI_EXTENSION_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-fi
+EXTENSION_PATH="${GEMINI_EXTENSION_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
-# Generic function to read a config value from a file or environment variable
-get_config_value() {
-  local key=$1
-  local default_value=$2
-  local config_file="$HOME/.gemini/audio_alerts.conf"
-  local value="$default_value"
+# Read settings directly from environment variables, with defaults.
+# The Gemini CLI automatically loads the .env file from the extension's directory.
+THEME="${AUDIO_ALERTS_THEME:-default}"
+AUDIO_ALERTS_DISABLE_TTS_MODE="${AUDIO_ALERTS_DISABLE_TTS:-false}"
+AUDIO_ALERTS_DEBUG_MODE="${AUDIO_ALERTS_DEBUG:-0}"
 
-  # 1. Read from config file
-  if [ -f "$config_file" ]; then
-    # Use grep and cut for portability
-    local value_from_config=$(grep -E "^\s*$key\s*=" "$config_file" | cut -d'=' -f2 | tr -d '[:space:]')
-    if [ -n "$value_from_config" ]; then
-      value="$value_from_config"
-    fi
-  fi
-
-  # 2. Environment variable overrides config file (using indirect expansion)
-  if [ -n "${!key}" ]; then
-    value="${!key}"
-  fi
-  
-  echo "$value"
-}
-
-THEME=$(get_config_value "AUDIO_ALERTS_THEME" "default")
 # Normalize theme name to lowercase
 THEME=$(echo "$THEME" | tr '[:upper:]' '[:lower:]')
 
@@ -96,8 +74,6 @@ play_audio() {
   fi
 }
 
-AUDIO_ALERTS_DISABLE_TTS_MODE=$(get_config_value "AUDIO_ALERTS_DISABLE_TTS" "false")
-
 # Cross-platform TTS (blocking/synchronous)
 speak() {
   if [[ "$AUDIO_ALERTS_DISABLE_TTS_MODE" == "true" ]]; then
@@ -137,7 +113,6 @@ get_timestamp_file() {
 
 # Debug logging
 DEBUG_LOG="/tmp/audio_alerts_debug.log"
-AUDIO_ALERTS_DEBUG_MODE=$(get_config_value "AUDIO_ALERTS_DEBUG" "0")
 log_debug() {
   [[ "${AUDIO_ALERTS_DEBUG_MODE:-0}" == "1" ]] && echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
 }
