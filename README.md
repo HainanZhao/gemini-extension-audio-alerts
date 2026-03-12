@@ -18,6 +18,17 @@ Direct audio alerts triggered via Gemini's hook system when:
 gemini extensions install https://github.com/HainanZhao/gemini-extension-audio-alerts
 ```
 
+## Important: Enable Notifications
+
+**This extension requires notifications to be enabled in Gemini settings.**
+
+Enable notifications using:
+```
+/settings
+```
+
+Without notifications enabled, the audio alerts will not trigger for some events.
+
 ## Sound Themes
 
 | Theme | Style |
