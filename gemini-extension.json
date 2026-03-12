@@ -34,7 +34,7 @@
       "sensitive": false
     },
     {
-      "name": "Disable Text-to-Speech",
+      "name": "Audio Alert Disable Text-to-Speech",
       "description": "Disable the voice prompts.",
       "envVar": "AUDIO_ALERTS_DISABLE_TTS",
       "type": "boolean",
@@ -42,7 +42,7 @@
       "sensitive": false
     },
     {
-      "name": "Debug Mode",
+      "name": "Audio Alert Debug Mode",
       "description": "Enable debug logging to /tmp/audio_alerts_debug.log.",
       "envVar": "AUDIO_ALERTS_DEBUG",
       "type": "boolean",
