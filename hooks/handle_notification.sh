@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
 
 # The Gemini CLI sets these environment variables when executing hooks
-EXTENSION_PATH="${GEMINI_EXTENSION_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+# When installed in ~/.gemini/hooks, the extension path is ~/.gemini
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "$SCRIPT_DIR" == "$HOME/.gemini/hooks" ]]; then
+  EXTENSION_PATH="$HOME/.gemini"
+else
+  EXTENSION_PATH="${GEMINI_EXTENSION_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+fi
 
-# Read theme from environment variable, default to 'retro'
-THEME="${AUDIO_ALERTS_THEME:-retro}"
+# Read theme from environment variable, default to 'default'
+THEME="${AUDIO_ALERTS_THEME:-default}"
 # Normalize theme name to lowercase
 THEME=$(echo "$THEME" | tr '[:upper:]' '[:lower:]')
 
-# Verify theme directory exists, fallback to retro if not
+# Verify theme directory exists, fallback to default if not
 if [ ! -d "$EXTENSION_PATH/assets/$THEME" ]; then
-  THEME="retro"
+  THEME="default"
 fi
 
 ASSETS_DIR="$EXTENSION_PATH/assets/$THEME"
 
 # Define messages for each theme (compatible with bash 3.2 - avoid associative arrays)
 case "$THEME" in
-  espionage)
+  default)
     QUESTION_MSG="Agent requesting permission"
     ERROR_MSG="Critical failure detected"
     DONE_MSG="Mission accomplished"
@@ -40,7 +46,7 @@ case "$THEME" in
   retro)
     QUESTION_MSG="Permission needed"
     ERROR_MSG="Error detected"
-    DONE_MSG="Level complete"
+    DONE_MSG="Task complete"
     ;;
   *)
     QUESTION_MSG="Permission required"
@@ -116,47 +122,26 @@ if [[ "$1" == "--before" ]]; then
   exit 0
 fi
 
-# 2. Handle Notifications
-if [[ "$1" == "--notification" ]]; then
-  local notification_type=""
-  local is_ask_user=false
-
-  # Use jq for reliable parsing
-  if command -v jq >/dev/null 2>&1; then
-    notification_type=$(echo "$CONTEXT" | jq -r '.notification_type // empty')
-    if [[ "$notification_type" == "ToolPermission" ]]; then
-      tool_code=$(echo "$CONTEXT" | jq -r '.tool_code // empty')
-      if [[ "$tool_code" == *'ask_user'* ]]; then
-        is_ask_user=true
-      fi
-    fi
-  else
-    # Fallback to grep
-    notification_type=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | head -1 | cut -d'"' -f4)
-    if [[ "$notification_type" == "ToolPermission" ]]; then
-      # This is less reliable as 'ask_user' could appear elsewhere
-      if echo "$CONTEXT" | grep -q 'ask_user'; then
-        is_ask_user=true
-      fi
-    fi
-  fi
-
-  log_debug "Notification: type=$notification_type, is_ask_user=$is_ask_user, theme=$THEME"
-
-  # Case: ToolPermission (specifically ask_user)
-  if [[ "$is_ask_user" == true ]]; then
-    log_debug "Playing question alert"
+# 1b. Handle BeforeTool - For tool-specific tracking (works in VS Code)
+if [[ "$1" == "--before-tool" ]]; then
+  # Check if this is an ask_user permission request
+  if echo "$CONTEXT" | grep -q '"name":"ask_user"' || echo "$CONTEXT" | grep -q '"name": "ask_user"'; then
+    log_debug "BeforeTool: ask_user detected, playing question alert"
     play_alert "$ASSETS_DIR/question.wav" "$QUESTION_MSG" &
-  # Case: ToolExecutionError
-  elif [[ "$notification_type" == "ToolExecutionError" ]]; then
-    log_debug "Playing error alert"
-    play_alert "$ASSETS_DIR/error.wav" "$ERROR_MSG" &
   fi
+  exit 0
+fi
+
+# 2. Handle Notifications (works in standalone terminal, not VS Code)
+if [[ "$1" == "--notification" ]]; then
+  log_debug "Notification: ToolPermission received, playing question alert"
+  play_alert "$ASSETS_DIR/question.wav" "$QUESTION_MSG" &
 
 # 3. Handle Agent Completion (AfterAgent Hook)
 elif [[ "$1" == "--finished" ]]; then
   TIMESTAMP_FILE=$(get_timestamp_file)
   SKIP_SOUND=false
+  SKIP_TTS=false
 
   if [ -f "$TIMESTAMP_FILE" ]; then
     START_TIME=$(cat "$TIMESTAMP_FILE")
@@ -164,24 +149,27 @@ elif [[ "$1" == "--finished" ]]; then
     ELAPSED=$((END_TIME - START_TIME))
     log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=$DONE_MSG"
 
-    # Skip sound if less than 15 seconds elapsed (reduced from 30s)
-    if [ "$ELAPSED" -lt 15 ]; then
-      SKIP_SOUND=true
-      log_debug "Skipping sound (elapsed < 15s)"
+    # If less than 30 seconds, play sound only (no TTS)
+    if [ "$ELAPSED" -lt 30 ]; then
+      SKIP_TTS=true
+      log_debug "Short session (< 30s): will play sound only, skip TTS"
     fi
 
     # Clean up timestamp file
     rm -f "$TIMESTAMP_FILE"
   else
     log_debug "AfterAgent: No timestamp file found at $TIMESTAMP_FILE"
-    # If no timestamp file, we don't know the duration. 
-    # Default to skip if it's likely a trivial session or if we want to be conservative.
     SKIP_SOUND=true
   fi
 
   if [ "$SKIP_SOUND" = false ]; then
-    log_debug "Playing done alert"
-    play_alert "$ASSETS_DIR/done.wav" "$DONE_MSG" &
+    if [ "$SKIP_TTS" = true ]; then
+      log_debug "Playing done alert (sound only, no TTS)"
+      play_audio "$ASSETS_DIR/done.wav" &
+    else
+      log_debug "Playing done alert"
+      play_alert "$ASSETS_DIR/done.wav" "$DONE_MSG" &
+    fi
   fi
 fi
 

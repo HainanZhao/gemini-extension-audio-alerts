@@ -43,7 +43,7 @@ You should hear audio alerts when Gemini asks questions or completes tasks.
 
 Set the environment variable:
 ```bash
-export AUDIO_ALERTS_THEME=retro  # Options: default, retro, portal, espionage, hero, premium
+export AUDIO_ALERTS_THEME=retro  # Options: default, retro, portal, default, hero, premium
 ```
 
 Add to your `~/.zshrc` or `~/.bashrc` to make it permanent.

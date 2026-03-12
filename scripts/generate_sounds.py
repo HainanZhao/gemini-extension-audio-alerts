@@ -112,7 +112,7 @@ def generate_theme_sounds():
             'error': {'type': 'tone', 'freq': 330, 'duration': 0.35},  # Soft low alert
             'done': {'type': 'chime', 'freqs': [523, 659, 784], 'duration': 0.5},  # Success chime (C major)
         },
-        'espionage': {
+        'default': {
             'question': {'type': 'tone', 'freq': 800, 'duration': 0.15},  # High-tech click
             'error': {'type': 'tone', 'freq': 200, 'duration': 0.4},  # Low warning
             'done': {'type': 'chime', 'freqs': [440, 660, 880], 'duration': 0.5},  # Success chord
