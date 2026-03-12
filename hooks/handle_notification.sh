@@ -114,7 +114,9 @@ get_timestamp_file() {
 # Debug logging
 DEBUG_LOG="/tmp/audio_alerts_debug.log"
 log_debug() {
-  [[ "${AUDIO_ALERTS_DEBUG_MODE:-0}" == "1" ]] && echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
+  if [[ "${AUDIO_ALERTS_DEBUG_MODE:-0}" == "1" || "$AUDIO_ALERTS_DEBUG_MODE" == "true" ]]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
+  fi
 }
 
 # Read hook data from stdin
