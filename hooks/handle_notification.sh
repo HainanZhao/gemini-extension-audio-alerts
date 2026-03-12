@@ -15,38 +15,37 @@ fi
 
 ASSETS_DIR="$EXTENSION_PATH/assets/$THEME"
 
-# Define messages for each theme
-declare -A THEME_MESSAGES
+# Define messages for each theme (compatible with bash 3.2 - avoid associative arrays)
 case "$THEME" in
   espionage)
-    THEME_MESSAGES[question]="Agent requesting permission"
-    THEME_MESSAGES[error]="Critical failure detected"
-    THEME_MESSAGES[done]="Mission accomplished"
+    QUESTION_MSG="Agent requesting permission"
+    ERROR_MSG="Critical failure detected"
+    DONE_MSG="Mission accomplished"
     ;;
   hero)
-    THEME_MESSAGES[question]="Your approval is required"
-    THEME_MESSAGES[error]="An error has occurred"
-    THEME_MESSAGES[done]="Task complete. Well done, hero"
+    QUESTION_MSG="Your approval is required"
+    ERROR_MSG="An error has occurred"
+    DONE_MSG="Task complete. Well done, hero"
     ;;
   portal)
-    THEME_MESSAGES[question]="Permission requested"
-    THEME_MESSAGES[error]="Portal malfunction"
-    THEME_MESSAGES[done]="Portal activated"
+    QUESTION_MSG="Permission requested"
+    ERROR_MSG="Portal malfunction"
+    DONE_MSG="Portal activated"
     ;;
   premium)
-    THEME_MESSAGES[question]="Permission required"
-    THEME_MESSAGES[error]="An error occurred"
-    THEME_MESSAGES[done]="Process completed"
+    QUESTION_MSG="Permission required"
+    ERROR_MSG="An error occurred"
+    DONE_MSG="Process completed"
     ;;
   retro)
-    THEME_MESSAGES[question]="Permission needed"
-    THEME_MESSAGES[error]="Error detected"
-    THEME_MESSAGES[done]="Level complete"
+    QUESTION_MSG="Permission needed"
+    ERROR_MSG="Error detected"
+    DONE_MSG="Level complete"
     ;;
   *)
-    THEME_MESSAGES[question]="Permission required"
-    THEME_MESSAGES[error]="Error occurred"
-    THEME_MESSAGES[done]="Task completed"
+    QUESTION_MSG="Permission required"
+    ERROR_MSG="Error occurred"
+    DONE_MSG="Task completed"
     ;;
 esac
 
@@ -92,10 +91,12 @@ play_alert() {
   speak "$text"
 }
 
-# Get timestamp file path (unique per terminal session)
+# Get timestamp file path (unique per session)
 get_timestamp_file() {
-  local terminal_id="${TERM_SESSION_ID:-$$}"
-  echo "/tmp/audio_alerts_${terminal_id}.timestamp"
+  # Use GEMINI_SESSION_ID for stability across hook executions
+  # Fallback to TERM_SESSION_ID or a temporary ID if not present
+  local session_id="${GEMINI_SESSION_ID:-${TERM_SESSION_ID:-default_session}}"
+  echo "/tmp/audio_alerts_${session_id}.timestamp"
 }
 
 # Debug logging
@@ -117,18 +118,25 @@ fi
 
 # 2. Handle Notifications
 if [[ "$1" == "--notification" ]]; then
-  NOTIFICATION_TYPE=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | cut -d'"' -f4)
-  log_debug "Notification: type=$NOTIFICATION_TYPE, theme=$THEME, question_msg=${THEME_MESSAGES[question]}"
+  # Use jq if available for better reliability
+  if command -v jq >/dev/null 2>&1; then
+    NOTIFICATION_TYPE=$(echo "$CONTEXT" | jq -r '.notification_type // empty')
+  else
+    NOTIFICATION_TYPE=$(echo "$CONTEXT" | grep -o '"notification_type":"[^"]*"' | head -1 | cut -d'"' -f4)
+  fi
+
+  log_debug "Notification: type=$NOTIFICATION_TYPE, theme=$THEME, question_msg=$QUESTION_MSG"
 
   # Case: ToolPermission (specifically ask_user)
+  # We check for ask_user in the whole context as it might be in different fields
   if [[ "$NOTIFICATION_TYPE" == "ToolPermission" ]] && echo "$CONTEXT" | grep -q '"type":"ask_user"'; then
     log_debug "Playing question alert"
-    play_alert "$ASSETS_DIR/question.wav" "${THEME_MESSAGES[question]}" &
+    play_alert "$ASSETS_DIR/question.wav" "$QUESTION_MSG" &
 
   # Case: Generic Errors
   elif echo "$CONTEXT" | grep -qi "error"; then
     log_debug "Playing error alert"
-    play_alert "$ASSETS_DIR/error.wav" "${THEME_MESSAGES[error]}" &
+    play_alert "$ASSETS_DIR/error.wav" "$ERROR_MSG" &
   fi
 
 # 3. Handle Agent Completion (AfterAgent Hook)
@@ -140,21 +148,26 @@ elif [[ "$1" == "--finished" ]]; then
     START_TIME=$(cat "$TIMESTAMP_FILE")
     END_TIME=$(date +%s)
     ELAPSED=$((END_TIME - START_TIME))
-    log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=${THEME_MESSAGES[done]}"
+    log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=$DONE_MSG"
 
-    # Skip sound if less than 30 seconds elapsed
-    if [ "$ELAPSED" -lt 30 ]; then
+    # Skip sound if less than 15 seconds elapsed (reduced from 30s)
+    if [ "$ELAPSED" -lt 15 ]; then
       SKIP_SOUND=true
-      log_debug "Skipping sound (elapsed < 30s)"
+      log_debug "Skipping sound (elapsed < 15s)"
     fi
 
     # Clean up timestamp file
     rm -f "$TIMESTAMP_FILE"
+  else
+    log_debug "AfterAgent: No timestamp file found at $TIMESTAMP_FILE"
+    # If no timestamp file, we don't know the duration. 
+    # Default to skip if it's likely a trivial session or if we want to be conservative.
+    SKIP_SOUND=true
   fi
 
   if [ "$SKIP_SOUND" = false ]; then
     log_debug "Playing done alert"
-    play_alert "$ASSETS_DIR/done.wav" "${THEME_MESSAGES[done]}" &
+    play_alert "$ASSETS_DIR/done.wav" "$DONE_MSG" &
   fi
 fi
 
