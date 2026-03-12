@@ -29,21 +29,9 @@ Enable notifications using:
 Without notifications enabled, the audio alerts will not trigger for some events.
 
 ## Configuration (Optional)
-
-To configure the extension, you can use the `gemini settings` command or manually edit the extension's environment file.
-
-### Using Gemini Settings
-
-Run the following command to open the settings UI:
-```bash
-gemini settings
-```
-Then, find the "Audio Alerts" extension and change the "Audio Alert Theme" setting.
-
 ### Manual Configuration
 
-You can also edit the `.env` file directly.
-
+You can edit the `.env` file directly.
 1.  **Locate the extension directory**: `~/.gemini/extensions/audio-alerts`
 2.  **Edit the environment file**:
     ```bash
