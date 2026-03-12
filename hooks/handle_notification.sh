@@ -105,10 +105,10 @@ get_timestamp_file() {
   echo "/tmp/audio_alerts_${session_id}.timestamp"
 }
 
-# Debug logging
+# Debug logging (only when AUDIO_ALERTS_DEBUG=1)
 DEBUG_LOG="/tmp/audio_alerts_debug.log"
 log_debug() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
+  [[ "${AUDIO_ALERTS_DEBUG:-0}" == "1" ]] && echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
 }
 
 # Read hook data from stdin
