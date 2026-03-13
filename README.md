@@ -68,7 +68,7 @@ To change the theme, use the `gemini settings` command or edit the `~/.gemini/ex
 
 Hooks are defined in `hooks/hooks.json`:
 - **Notification** (`ToolPermission`) → Question sound (standalone terminal)
-- **AfterAgent** → Completion sound (skips TTS if < 60s)
+- **AfterAgent** → Completion sound (skips TTS if < 30s)
 
 ## Requirements
 

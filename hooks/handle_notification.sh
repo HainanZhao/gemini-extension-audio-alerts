@@ -22,6 +22,10 @@ fi
 
 ASSETS_DIR="$EXTENSION_PATH/assets/$THEME"
 
+# Get the project folder name (basename of the current working directory)
+# This is used to prefix spoken messages with the project name.
+PROJECT_NAME=$(basename "$(pwd)")
+
 # Define messages for each theme (compatible with bash 3.2 - avoid associative arrays)
 case "$THEME" in
   default)
@@ -55,6 +59,11 @@ case "$THEME" in
     DONE_MSG="Task completed"
     ;;
 esac
+
+# Prefix project name to spoken messages for context
+QUESTION_MSG="$PROJECT_NAME $QUESTION_MSG"
+ERROR_MSG="$PROJECT_NAME $ERROR_MSG"
+DONE_MSG="$PROJECT_NAME $DONE_MSG"
 
 # Cross-platform audio player detection (blocking/synchronous)
 play_audio() {
@@ -157,10 +166,10 @@ elif [[ "$1" == "--finished" ]]; then
     ELAPSED=$((END_TIME - START_TIME))
     log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=$DONE_MSG"
 
-    # If less than 60 seconds, play sound only (no TTS)
-    if [ "$ELAPSED" -lt 60 ]; then
+    # If less than 30s, play sound only (no TTS)
+    if [ "$ELAPSED" -lt 30 ]; then
       SKIP_TTS=true
-      log_debug "Short session (< 60s): will play sound only, skip TTS"
+      log_debug "Short session (< 30s): will play sound only, skip TTS"
     fi
 
     # Clean up timestamp file

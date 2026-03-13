@@ -5,7 +5,7 @@
   "settings": [
     {
       "name": "Audio Alert Theme",
-      "description": "Select the audio theme.",
+      "description": "Select the audio theme (default, retro, portal, hero, premium).",
       "envVar": "AUDIO_ALERTS_THEME",
       "type": "choice",
       "default": "default",
@@ -35,16 +35,8 @@
     },
     {
       "name": "Audio Alert Disable Text-to-Speech",
-      "description": "Disable the voice prompts.",
+      "description": "Disable the voice prompts (false).",
       "envVar": "AUDIO_ALERTS_DISABLE_TTS",
-      "type": "boolean",
-      "default": false,
-      "sensitive": false
-    },
-    {
-      "name": "Audio Alert Debug Mode",
-      "description": "Enable debug logging to /tmp/audio_alerts_debug.log.",
-      "envVar": "AUDIO_ALERTS_DEBUG",
       "type": "boolean",
       "default": false,
       "sensitive": false
