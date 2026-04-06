@@ -166,6 +166,16 @@ elif [[ "$1" == "--finished" ]]; then
     ELAPSED=$((END_TIME - START_TIME))
     log_debug "AfterAgent: elapsed=${ELAPSED}s, theme=$THEME, done_msg=$DONE_MSG"
 
+    # Display stats to the user
+    if [ "$ELAPSED" -ge 60 ]; then
+      MIN=$((ELAPSED / 60))
+      SEC=$((ELAPSED % 60))
+      STATS_MSG="${MIN}m ${SEC}s"
+    else
+      STATS_MSG="${ELAPSED}s"
+    fi
+    printf "\n\033[32m✔ Task completed in ${STATS_MSG}\033[0m\n"
+
     # If less than 30s, play sound only (no TTS)
     if [ "$ELAPSED" -lt 30 ]; then
       SKIP_TTS=true
